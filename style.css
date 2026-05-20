@@ -1,0 +1,96 @@
+* {
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  font-family: "JetBrainsMonoNerdFont", monospace;
+  font-size: 12px;
+  min-height: 0;
+  text-shadow: none;
+}
+
+window#waybar {
+  background: #222222;
+  color: #bbbbbb;
+}
+
+tooltip {
+  background: #222222;
+  border: 1px solid #444444;
+  color: #bbbbbb;
+}
+
+tooltip label {
+  color: #bbbbbb;
+}
+
+#workspaces,
+#taskbar,
+#memory,
+#battery,
+#custom-kb_layout,
+#clock,
+#tray {
+  background: #222222;
+  color: #bbbbbb;
+  margin: 0;
+  padding: 0 2px;
+}
+
+#workspaces {
+  padding-left: 4px;
+}
+
+#workspaces button,
+#taskbar button {
+  background: transparent;
+  color: #bbbbbb;
+  margin: 0;
+  padding: 0 5px;
+}
+
+#workspaces button:hover,
+#taskbar button:hover {
+  background: #444444;
+  color: #eeeeee;
+}
+
+#workspaces button.active,
+#workspaces button.visible,
+#taskbar button.active {
+  background: #005577;
+  color: #eeeeee;
+}
+
+#workspaces button.urgent {
+  background: #ad401f;
+  color: #eeeeee;
+}
+
+#workspaces button.hidden,
+#workspaces button.empty {
+  color: #777777;
+}
+
+#taskbar button.minimized {
+  color: #777777;
+}
+
+#taskbar button.maximized {
+  color: #eeeeee;
+}
+
+#taskbar.empty {
+  padding: 0;
+}
+
+#battery.warning:not(.charging) {
+  color: #d79921;
+}
+
+#battery.critical:not(.charging) {
+  color: #ad401f;
+}
+
+#tray {
+  padding-right: 4px;
+}

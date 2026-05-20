@@ -3,6 +3,8 @@
   "position": "bottom",
   "height": 24,
   "spacing": 0,
+  "expand-left": true,
+  "no-center": true,
 
   "modules-left": [
     "ext/workspaces",
@@ -30,19 +32,18 @@
       "8": "8",
       "9": "9",
       "urgent": "!",
-      "active": "",
-      "default": "{name}"
     },
-    "ignore-hidden": true,
+    "ignore-hidden": false,
     "on-click": "activate",
     "on-click-right": "deactivate",
     "sort-by-number": true
   },
 
   "wlr/taskbar": {
-    "format": "{title:.48}",
-    "tooltip-format": "{app_id}: {title}",
+    "format": "{title}",
+    "tooltip-format": "{title}",
     "all-outputs": false,
+    "expand": true,
     "active-first": false,
     "on-click": "minimize-raise",
     "on-click-middle": "close",

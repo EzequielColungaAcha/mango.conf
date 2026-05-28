@@ -1,0 +1,64 @@
+/*****----- Configuration -----*****/
+configuration {
+    show-icons:                 true;
+}
+
+/*****----- Global Properties -----*****/
+@import "~/.cache/wal/colors-rofi-dark.rasi"
+
+/*****----- Main Window -----*****/
+window {
+    transparency:               "real";
+    location:                   center;
+    anchor:                     center;
+    width:                      75%;
+    height:                     75%;
+    background-color:           @background;
+    border-radius:              12px;
+}
+
+/*****----- Main Box -----*****/
+mainbox {
+    children:                   [ "listview" ];
+    spacing:                    0;
+    padding:                    0;
+    background-color:           transparent;
+}
+
+/*****----- Listview -----*****/
+listview {
+    columns:                    2;
+    lines:                      0;
+    spacing:                    4px;
+    padding:                    4px;
+    scrollbar:                  false;
+    background-color:           transparent;
+    dynamic:                    true;
+    fixed-height:               true;
+}
+
+/*****----- Elements -----*****/
+element {
+    orientation:                vertical;
+    padding:                    -100px;
+    border-radius:              4px;
+    background-color:           @background;
+    cursor:                     pointer;
+}
+
+element selected {
+    background-color:           @selected-normal-background;
+}
+
+element-icon {
+    size:                       540px;
+    horizontal-align:           0.5;
+    background-color:           transparent;
+    border-radius:              4px;
+    padding:                    0px;
+}
+
+/* Hide text (wallpaper paths) */
+element-text {
+    enabled:                    false;
+}

@@ -1,4 +1,9 @@
 #!/usr/bin/bash
 
-alacritty --class=Zellij --title=Zellij -e zellij --layout canid
+export CANID_ROOT="${CANID_ROOT:-$HOME/canid}"
+export ZELLIJ_CONFIG_DIR="$HOME/.config/mango/zellij"
 
+envsubst < "$ZELLIJ_CONFIG_DIR/layouts/canid.kdl.template" > "$ZELLIJ_CONFIG_DIR/layouts/canid.kdl"
+
+alacritty --config-file "$HOME/.config/mango/alacritty/alacritty.toml" \
+  --class=Zellij --title=Zellij -e zellij --layout canid

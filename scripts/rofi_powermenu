@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-theme="~/.config/rofi/themes/rofi_powermenu_theme.rasi"
+theme="~/.config/mango/rofi/themes/rofi_powermenu_theme.rasi"
 
 # Options
 shutdown='󰤆 Shutdown'

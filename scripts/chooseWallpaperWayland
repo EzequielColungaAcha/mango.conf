@@ -14,7 +14,7 @@ for wallpaper in "${wallpapers[@]}"; do
 done
 
 # Show menu with preview theme
-WALLPAPER=$(echo -e "$input" | rofi -dmenu -show-icons -theme ~/.config/rofi/themes/wallpaper-preview.rasi -p "󰉏 Wallpapers")
+WALLPAPER=$(echo -e "$input" | rofi -dmenu -show-icons -theme ~/.config/mango/rofi/themes/wallpaper-preview.rasi -p "󰉏 Wallpapers")
 
 # Exit if no selection
 [[ -z "$WALLPAPER" ]] && exit 0

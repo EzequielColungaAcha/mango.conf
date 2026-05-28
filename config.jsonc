@@ -1,4 +1,5 @@
 {
+  "reload_style_on_change": true,
   "layer": "top",
   "position": "bottom",
   "height": 24,
@@ -6,17 +7,14 @@
   "expand-left": true,
   "no-center": true,
 
-  "modules-left": [
-    "ext/workspaces",
-    "wlr/taskbar"
-  ],
+  "modules-left": ["ext/workspaces"],
   "modules-right": [
     "memory",
     "battery",
     "custom/kb_layout",
     "clock#date",
     "clock#time",
-    "tray"
+    "tray",
   ],
 
   "ext/workspaces": {
@@ -36,7 +34,7 @@
     "ignore-hidden": false,
     "on-click": "activate",
     "on-click-right": "deactivate",
-    "sort-by-number": true
+    "sort-by-number": true,
   },
 
   "wlr/taskbar": {
@@ -47,12 +45,12 @@
     "active-first": false,
     "on-click": "minimize-raise",
     "on-click-middle": "close",
-    "on-click-right": "maximize"
+    "on-click-right": "maximize",
   },
 
   "memory": {
     "interval": 5,
-    "format": "|  {used:0.1f}G "
+    "format": "|  {used:0.1f}G ",
   },
 
   "battery": {
@@ -60,47 +58,35 @@
     "interval": 10,
     "states": {
       "warning": 20,
-      "critical": 10
+      "critical": 10,
     },
     "format": "| {icon} {capacity}% ",
     "format-charging": "| 󰂄 {capacity}% ",
     "format-plugged": "| 󰂄 {capacity}% ",
     "format-full": "| 󰁹 {capacity}% ",
-    "format-icons": [
-      "󱉞",
-      "󱃍",
-      "󰁻",
-      "󰁼",
-      "󰁽",
-      "󰁾",
-      "󰁿",
-      "󰂀",
-      "󰂁",
-      "󰂂",
-      "󰁹"
-    ]
+    "format-icons": ["󱉞", "󱃍", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"],
   },
 
   "custom/kb_layout": {
     "interval": 1,
     "exec": "sh -c 'layout=us; if command -v mmsg >/dev/null 2>&1; then value=$(mmsg -g -k 2>/dev/null | awk \"{print \\\\$3; exit}\"); layout=${value:-us}; fi; printf \"%s\" \"$layout\"'",
-    "format": "| {} "
+    "format": "| {} ",
   },
 
   "clock#date": {
     "interval": 60,
     "format": "| 󰃭 {:%a %d/%m} ",
-    "on-click": "zenity --calendar"
+    "on-click": "zenity --calendar",
   },
 
   "clock#time": {
     "interval": 1,
     "format": "|  {:%H:%M} ",
-    "on-click": "zenity --calendar"
+    "on-click": "zenity --calendar",
   },
 
   "tray": {
     "icon-size": 16,
-    "spacing": 2
-  }
+    "spacing": 2,
+  },
 }

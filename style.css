@@ -1,26 +1,28 @@
+@import '/home/ezziel/.cache/wal/colors-waybar.css';
+
 * {
   border: none;
   border-radius: 0;
   box-shadow: none;
-  font-family: "JetBrainsMonoNerdFont", monospace;
+  font-family: 'JetBrainsMonoNerdFont', monospace;
   font-size: 14px;
   min-height: 0;
   text-shadow: none;
 }
 
 window#waybar {
-  background: #222222;
-  color: #bbbbbb;
+  background: @background;
+  color: @foreground;
 }
 
 tooltip {
-  background: #222222;
-  border: 1px solid #444444;
-  color: #bbbbbb;
+  background: @background;
+  border: 1px solid @color8;
+  color: @foreground;
 }
 
 tooltip label {
-  color: #bbbbbb;
+  color: @foreground;
 }
 
 #workspaces,
@@ -30,8 +32,8 @@ tooltip label {
 #custom-kb_layout,
 #clock,
 #tray {
-  background: #222222;
-  color: #bbbbbb;
+  background: @background;
+  color: @foreground;
   margin: 0;
   padding: 0 2px;
 }
@@ -43,7 +45,7 @@ tooltip label {
 #workspaces button,
 #taskbar button {
   background: transparent;
-  color: #bbbbbb;
+  color: @foreground;
   margin: 0;
   padding: 0 5px;
 }
@@ -59,35 +61,35 @@ tooltip label {
   padding: 0;
 }
 
-#workspaces button:hover,
-#taskbar button:hover {
-  background: #444444;
-  color: #eeeeee;
-}
-
 #workspaces button.active,
 #workspaces button.visible,
 #taskbar button.active {
-  background: #005577;
-  color: #eeeeee;
+  background: @color4;
+  color: @background;
+}
+
+#workspaces button:hover,
+#taskbar button:hover {
+  background: @color8;
+  color: @background;
 }
 
 #workspaces button.urgent {
-  background: #ad401f;
-  color: #eeeeee;
+  background: @color9;
+  color: @color15;
 }
 
 #workspaces button.hidden,
 #workspaces button.empty {
-  color: #777777;
+  color: @color8;
 }
 
 #taskbar button.minimized {
-  color: #777777;
+  color: @color8;
 }
 
 #taskbar button.maximized {
-  color: #eeeeee;
+  color: @color15;
 }
 
 #taskbar.empty {
@@ -95,11 +97,11 @@ tooltip label {
 }
 
 #battery.warning:not(.charging) {
-  color: #d79921;
+  color: @color11;
 }
 
 #battery.critical:not(.charging) {
-  color: #ad401f;
+  color: @color9;
 }
 
 #tray {

@@ -1,0 +1,3 @@
+#!/usr/bin/bash
+rofi -show drun -theme ~/.config/rofi/themes/rofi_all_apps_theme.rasi
+

@@ -1,0 +1,73 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+WAL_COLORS_JSON="${WAL_COLORS_JSON:-$HOME/.cache/wal/colors.json}"
+MANGO_CONFIG="${MANGO_CONFIG:-$HOME/.config/mango/config.conf}"
+
+if [[ ! -f "$WAL_COLORS_JSON" ]]; then
+  echo "mangoWalColors: missing $WAL_COLORS_JSON" >&2
+  exit 1
+fi
+
+if [[ ! -f "$MANGO_CONFIG" ]]; then
+  echo "mangoWalColors: missing $MANGO_CONFIG" >&2
+  exit 1
+fi
+
+python3 - "$WAL_COLORS_JSON" "$MANGO_CONFIG" <<'PY'
+import json
+import re
+import sys
+from pathlib import Path
+
+wal_path = Path(sys.argv[1])
+cfg_path = Path(sys.argv[2])
+
+data = json.loads(wal_path.read_text(encoding="utf-8"))
+special = data.get("special", {})
+colors = data.get("colors", {})
+
+def hex_to_mango_rgba(hex_rgb: str, alpha_hex: str = "ff") -> str:
+    # wal gives "#RRGGBB"
+    s = hex_rgb.strip()
+    if not re.fullmatch(r"#[0-9a-fA-F]{6}", s):
+        raise ValueError(f"Unexpected color: {hex_rgb!r}")
+    return "0x" + s[1:] + alpha_hex
+
+# Opinionated mapping: keep the same semantic intent as your old config.conf
+mango_colors = {
+    "rootcolor": hex_to_mango_rgba(special.get("background", colors.get("color0", "#000000")), "ff"),
+    "bordercolor": hex_to_mango_rgba(colors.get("color8", special.get("foreground", "#ffffff")), "ff"),
+    "focuscolor": hex_to_mango_rgba(colors.get("color4", colors.get("color12", "#ffffff")), "ff"),
+    "urgentcolor": hex_to_mango_rgba(colors.get("color9", colors.get("color1", "#ff0000")), "ff"),
+    "globalcolor": hex_to_mango_rgba(colors.get("color4", colors.get("color12", "#ffffff")), "ff"),
+    "scratchpadcolor": hex_to_mango_rgba(colors.get("color0", special.get("background", "#000000")), "ff"),
+    "overlaycolor": hex_to_mango_rgba(colors.get("color7", special.get("foreground", "#ffffff")), "ff"),
+    "dropcolor": hex_to_mango_rgba(colors.get("color4", colors.get("color12", "#ffffff")), "55"),
+    "splitcolor": hex_to_mango_rgba(colors.get("color9", colors.get("color1", "#ff0000")), "ff"),
+    "maximizescreencolor": hex_to_mango_rgba(colors.get("color15", special.get("foreground", "#ffffff")), "ff"),
+}
+
+lines = cfg_path.read_text(encoding="utf-8").splitlines(keepends=True)
+key_re = re.compile(r"^(?P<key>[a-z_]+)=(?P<val>.*)$")
+
+out = []
+seen = set()
+for line in lines:
+    m = key_re.match(line.strip("\n"))
+    if m:
+        key = m.group("key")
+        if key in mango_colors:
+            out.append(f"{key}={mango_colors[key]}\n")
+            seen.add(key)
+            continue
+    out.append(line)
+
+cfg_path.write_text("".join(out), encoding="utf-8")
+PY
+
+# Reload Mango config if IPC tool exists; ignore errors if not in a Mango session.
+if command -v mmsg >/dev/null 2>&1; then
+  mmsg -s -d reload_config 2>/dev/null || true
+fi
+

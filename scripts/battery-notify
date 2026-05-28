@@ -1,0 +1,26 @@
+#!/bin/bash
+# Simple low-battery notifier for dunst
+
+BATTERY="/sys/class/power_supply/BAT0/capacity"
+STATUS="/sys/class/power_supply/BAT0/status"
+LAST_LEVEL_FILE="/tmp/last_battery_level"
+ALERT_SOUND="/usr/share/sounds/freedesktop/stereo/dialog-warning.oga"
+
+while true; do
+    if [ -f "$BATTERY" ]; then
+        LEVEL=$(cat "$BATTERY")
+        STATUS_NOW=$(cat "$STATUS")
+
+        # Save previous level to avoid repeated spam
+        [ -f "$LAST_LEVEL_FILE" ] && LAST_LEVEL=$(cat "$LAST_LEVEL_FILE") || LAST_LEVEL=100
+
+        if [ "$STATUS_NOW" = "Discharging" ] && [ "$LEVEL" -le 10 ] && [ "$LEVEL" -lt "$LAST_LEVEL" ]; then
+	    paplay "$ALERT_SOUND"
+            notify-send -u critical "⚠️  Battery low" "Battery at ${LEVEL}%"
+        fi
+
+        echo "$LEVEL" > "$LAST_LEVEL_FILE"
+    fi
+    sleep 60   # check every minute
+done
+

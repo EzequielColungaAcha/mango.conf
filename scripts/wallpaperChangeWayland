@@ -1,0 +1,21 @@
+#!/usr/bin/bash
+CURRENT_WALLPAPER=$(cat ~/.cache/wal/wal)
+while true
+do
+    WALLPAPER=$(find ~/.local/wallpapers/ -type f | shuf -n 1)
+    if [ $CURRENT_WALLPAPER != $WALLPAPER ]
+    then
+        wal -i $WALLPAPER & > /dev/null 2>&1
+        bash ~/.config/mango/scripts/mangoWalColors &>/dev/null || true
+        killall -SIGUSR2 waybar 2>/dev/null || true
+        killall pasystray; pasystray & > /dev/null 2>&1
+        killall blueman-applet; blueman-applet & > /dev/null 2>&1
+        killall battery-notify; bash ~/.config/mango/scripts/battery-notify & > /dev/null 2>&1
+        killall flameshot; flameshot & > /dev/null 2>&1
+        killall nm-applet; nm-applet --indicator & > /dev/null 2>&1
+        swaybg -i $WALLPAPER & > /dev/null 2>&1
+        notify-send "Wallpaper Changed" --icon="$WALLPAPER"
+        exit
+    fi
+done
+

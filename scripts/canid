@@ -1,0 +1,4 @@
+#!/usr/bin/bash
+
+alacritty --class=Zellij --title=Zellij -e zellij --layout canid
+

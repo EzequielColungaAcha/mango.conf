@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# Waybar module: show keyboard layout from mmsg when available.
+
+layout=us
+
+if command -v mmsg >/dev/null 2>&1; then
+  mmsg_out=$(mmsg -g -k 2>/dev/null || true)
+  if [[ -n "$mmsg_out" ]]; then
+    value=$(printf '%s\n' "$mmsg_out" | awk '{print $3; exit}')
+    layout=${value:-us}
+  fi
+fi
+
+printf '%s' "$layout"

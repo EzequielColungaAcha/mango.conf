@@ -34,7 +34,7 @@
     "ignore-hidden": false,
     "on-click": "activate",
     "on-click-right": "deactivate",
-    "sort-by-number": true,
+    "sort-by-id": true,
   },
 
   "wlr/taskbar": {
@@ -69,7 +69,7 @@
 
   "custom/kb_layout": {
     "interval": 1,
-    "exec": "sh -c 'layout=us; if command -v mmsg >/dev/null 2>&1; then value=$(mmsg -g -k 2>/dev/null | awk \"{print \\\\$3; exit}\"); layout=${value:-us}; fi; printf \"%s\" \"$layout\"'",
+    "exec": "bash ~/.config/mango/scripts/kb_layout",
     "format": "| {} ",
   },
 

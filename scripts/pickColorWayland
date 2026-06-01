@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+geometry=$(slurp -p)
+[[ -z "$geometry" ]] && exit 0
+
+color=$(
+	grim -g "$geometry" -t ppm - \
+		| magick - -format '%[pixel:p{0,0}]' txt:- \
+		| tail -n 1 \
+		| cut -d ' ' -f 4
+)
+
+[[ -z "$color" ]] && exit 1
+
+printf '%s' "$color" | wl-copy
+
+swatch="${XDG_RUNTIME_DIR:-/tmp}/mango-color-swatch.png"
+magick -size 64x64 xc:"$color" "$swatch"
+notify-send "Color copied" \
+	"$color" \
+	--icon="$swatch" \
+	2>/dev/null || true

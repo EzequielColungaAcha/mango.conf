@@ -390,11 +390,11 @@ print_manual_steps() {
      "on-click": "exec alacritty --title=bluetui -e bluetui"
    in ~/.config/waybar/modules/bluetooth.jsonc
 
-10. The Mango session starts Veila automatically:
-      veilad
-      veila idle --lock-after=120 --lock-before-sleep
-    Veila locks after 120s idle and suspends 180s after lock readiness
-    (about 300s after idle begins). It uses ~/.config/veila/config.toml
+10. The Mango session starts Veila through systemd user services:
+      systemctl --user restart veilad.service veila-idle.service
+    The idle service reads ~/.config/veila/idle.env, locks after 120s idle,
+    and requests suspend locking before sleep. Veila suspends 180s after lock
+    readiness (about 300s after idle begins). It uses ~/.config/veila/config.toml
     and the current pywal wallpaper from ~/.cache/wal/veila.toml.
 
 11. For Canid (Alt+Shift+X), set project root if not ~/canid:

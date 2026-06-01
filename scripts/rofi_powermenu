@@ -68,7 +68,7 @@ case ${chosen} in
 		run_cmd --reboot
         ;;
     $lock)
-		slock
+		bash "$HOME/.config/mango/scripts/lockWayland"
         ;;
     $suspend)
 		run_cmd --suspend

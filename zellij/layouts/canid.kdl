@@ -1,0 +1,65 @@
+layout {
+    default_tab_template {
+        pane size=1 borderless=true {
+            plugin location="file:~/.config/mango/zellij/plugins/zjstatus.wasm" {
+                format_left  "{tabs}"
+                format_right "{datetime}"
+                format_space "#[bg=#000000]"
+
+                mode_normal  "#[bg=blue] "
+
+                tab_normal               "#[fg=#ffffff,bg=#000000] {name}"
+                tab_active               "#[fg=#50fa7b,bg=#000000,bold,italic] {name}"
+
+                datetime          "#[fg=#50fa7b,bg=#000000,bold] {format}"
+                datetime_format   "%A, %d %b %Y %H:%M"
+                datetime_timezone "America/Argentina/Buenos_Aires"
+            }
+        }
+        children
+    }
+    tab name="Canid" {
+        pane split_direction="vertical" {
+            pane {
+                pane cwd="/home/ezziel/canid/bluefox" name="Internal Tools" {
+                    command "pnpm"
+                    args "start:it"
+                }
+                pane cwd="/home/ezziel/canid/bluefox" name="Practice Portal" {
+                    command "pnpm"
+                    args "start:pp"
+                }
+            }
+            pane {
+                pane cwd="/home/ezziel/canid/bluefox" name="Services" {
+                    command "pnpm"
+                    args "dev:s"
+                }
+                pane cwd="/home/ezziel/canid/backend-api" name="Hasura Console" {
+                    command "hasura"
+                    args "console"
+                }
+            }
+        }
+    }
+    tab name="Git" {
+        pane split_direction="vertical" {
+            pane cwd="/home/ezziel/canid/bluefox" name="Bluefox LazyGit" {
+                command "lazygit"
+            }
+            pane cwd="/home/ezziel/canid/backend-api" name="Backend-Api LazyGit" {
+                command "lazygit"
+            }
+        }
+    }
+    tab name="Docker" {
+        pane name="LazyDocker" {
+            command "lazydocker"
+        }
+    }
+    tab name="Activity" {
+        pane name="BTop" {
+            command "btop"
+        }
+    }
+}

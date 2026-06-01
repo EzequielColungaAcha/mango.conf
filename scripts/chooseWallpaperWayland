@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-WALLPAPER_DIR="$HOME/.local/wallpapers"
+WALLPAPER_DIR="$HOME/Pictures/wallpapers"
 
 CURRENT_WALLPAPER=$(cat ~/.cache/wal/wal)
 
@@ -20,15 +20,16 @@ WALLPAPER=$(echo -e "$input" | rofi -dmenu -show-icons -theme ~/.config/mango/ro
 [[ -z "$WALLPAPER" ]] && exit 0
 
 if [ "$CURRENT_WALLPAPER" != "$WALLPAPER" ]; then
-    wal -i "$WALLPAPER" & > /dev/null 2>&1
+    awww img "$WALLPAPER" --transition-type any --transition-step 255 --transition-fps 144 >/dev/null 2>&1
+    sleep 1
+    wal -i "$WALLPAPER" >/dev/null 2>&1
     bash ~/.config/mango/scripts/mangoWalColors &>/dev/null || true
-    killall -SIGUSR2 waybar 2>/dev/null || true
-    killall pasystray; pasystray & > /dev/null 2>&1
-    killall blueman-applet; blueman-applet & > /dev/null 2>&1
-    killall battery-notify; bash ~/.config/mango/scripts/battery-notify & > /dev/null 2>&1
-    killall flameshot; flameshot & > /dev/null 2>&1
-    killall nm-applet; nm-applet --indicator & > /dev/null 2>&1
-    swaybg -i "$WALLPAPER" & > /dev/null 2>&1
-    notify-send "Wallpaper Changed" --icon="$WALLPAPER"
+    if ! pgrep -x waybar >/dev/null; then
+        bash ~/.config/mango/scripts/reloadWaybar &>/dev/null || true
+    fi
+#    killall pasystray; pasystray & > /dev/null 2>&1
+#    killall blueman-applet; blueman-applet & > /dev/null 2>&1
+#    killall battery-notify; bash ~/.config/mango/scripts/battery-notify & > /dev/null 2>&1
+#    killall nm-applet; nm-applet --indicator & > /dev/null 2>&1
+#    notify-send "Wallpaper Changed" --icon="$WALLPAPER"
 fi
-

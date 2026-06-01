@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+WAYBAR_CONFIG="${WAYBAR_CONFIG:-$HOME/.config/waybar/config.jsonc}"
+WAYBAR_STYLE="${WAYBAR_STYLE:-$HOME/.config/waybar/style.css}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+LOCK_FILE="${XDG_RUNTIME_DIR:-/tmp}/mango-reload-waybar.lock"
+
+start_waybar() {
+    if command -v setsid >/dev/null 2>&1; then
+        setsid -f waybar -c "$WAYBAR_CONFIG" -s "$WAYBAR_STYLE" >/dev/null 2>&1 9>&-
+    else
+        nohup waybar -c "$WAYBAR_CONFIG" -s "$WAYBAR_STYLE" >/dev/null 2>&1 9>&- &
+    fi
+}
+
+start_detached() {
+    if command -v setsid >/dev/null 2>&1; then
+        setsid -f "$@" >/dev/null 2>&1 9>&-
+    else
+        nohup "$@" >/dev/null 2>&1 9>&- &
+    fi
+}
+
+restart_tray_applets() {
+    pkill -x blueman-applet 2>/dev/null || true
+    pkill -x nm-applet 2>/dev/null || true
+    sleep 0.5
+
+    if command -v blueman-applet >/dev/null 2>&1; then
+        start_detached blueman-applet
+    fi
+
+    if command -v nm-applet >/dev/null 2>&1; then
+        start_detached nm-applet --indicator
+    fi
+}
+
+if [[ "${1:-}" == "--with-colors" ]]; then
+    bash "$SCRIPT_DIR/mangoWalColors" >/dev/null 2>&1 || true
+fi
+
+if command -v flock >/dev/null 2>&1; then
+    exec 9>"$LOCK_FILE"
+    flock 9
+else
+    LOCK_DIR="${LOCK_FILE}.d"
+    until mkdir "$LOCK_DIR" 2>/dev/null; do
+        sleep 0.1
+    done
+    trap 'rmdir "$LOCK_DIR"' EXIT
+fi
+
+mapfile -t WAYBAR_PIDS < <(pgrep -x waybar || true)
+
+if ((${#WAYBAR_PIDS[@]} > 1)); then
+    pkill -x waybar 2>/dev/null || true
+    sleep 0.2
+    start_waybar
+elif ((${#WAYBAR_PIDS[@]} == 1)); then
+    pkill -SIGUSR2 -x waybar 2>/dev/null || true
+else
+    start_waybar
+fi
+
+restart_tray_applets

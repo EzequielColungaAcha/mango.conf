@@ -1,14 +1,38 @@
 #!/usr/bin/env bash
-# Waybar module: show keyboard layout from mmsg when available.
+# Waybar module: show keyboard layout from Mango's IPC when available.
 
 layout=us
 
+normalize_layout() {
+  case "${1,,}" in
+    *"english (us)"*|us)
+      printf 'us'
+      ;;
+    *"latin american"*|*latam*)
+      printf 'latam'
+      ;;
+    *spanish*|es)
+      printf 'es'
+      ;;
+    "")
+      printf 'us'
+      ;;
+    *)
+      printf '%s' "$1"
+      ;;
+  esac
+}
+
 if command -v mmsg >/dev/null 2>&1; then
-  mmsg_out=$(mmsg -g -k 2>/dev/null || true)
+  mmsg_out=$(mmsg get keyboardlayout 2>/dev/null || true)
   if [[ -n "$mmsg_out" ]]; then
-    value=$(printf '%s\n' "$mmsg_out" | awk '{print $3; exit}')
-    layout=${value:-us}
+    if command -v jq >/dev/null 2>&1; then
+      value=$(jq -r '.layout // empty' <<<"$mmsg_out" 2>/dev/null || true)
+    else
+      value=$(sed -n 's/.*"layout"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' <<<"$mmsg_out")
+    fi
+    layout=$(normalize_layout "${value:-$layout}")
   fi
 fi
 
-printf '%s' "$layout"
+printf '%s\n' "$layout"

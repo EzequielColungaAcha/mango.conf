@@ -49,6 +49,7 @@ PKG_INSTALL=()
 PKG_QUERY=()
 PKG_NAME=()
 PKG_OPTIONAL=()
+PKG_AUR_REQUIRED=()
 PKG_AUR=()
 PKG_CANID=()
 
@@ -74,9 +75,11 @@ detect_pkg_manager() {
       noto-fonts noto-fonts-cjk noto-fonts-emoji ttf-jetbrains-mono-nerd
       micro fzf zoxide eza bat fd trash-cli git curl ffmpeg neovim nemo imv mpv
       docker lazygit lazydocker
-      brightnessctl playerctl pacman-contrib bash-completion sound-theme-freedesktop swaync
+      brightnessctl playerctl pacman-contrib bash-completion sound-theme-freedesktop
+      swaync
     )
     PKG_OPTIONAL=(pasystray)
+    PKG_AUR_REQUIRED=(veila-bin)
     PKG_AUR=(google-chrome bluetui dracula-cursors-git)
     PKG_CANID=(pnpm hasura-cli btop)
     return
@@ -175,6 +178,20 @@ install_optional_packages() {
   done
 }
 
+install_arch_required_aur_packages() {
+  if [[ "$PKG_MGR" != pacman || ${#PKG_AUR_REQUIRED[@]} -eq 0 ]]; then
+    return 0
+  fi
+
+  printf '\n=== required AUR packages ===\n'
+  if [[ "$PKG_HELPER" == pacman ]]; then
+    warn "paru or yay not found; install required AUR packages manually: ${PKG_AUR_REQUIRED[*]}"
+    return 0
+  fi
+
+  install_packages "${PKG_AUR_REQUIRED[@]}"
+}
+
 install_arch_aur_packages() {
   if [[ "$PKG_MGR" != pacman || ${#PKG_AUR[@]} -eq 0 ]]; then
     return 0
@@ -196,6 +213,7 @@ warn_missing_commands() {
     dunstify paplay blueman-applet zenity fzf zoxide eza bat brightnessctl
     playerctl nwg-look qt6ct nemo imv mpv bluetoothctl rfkill nm-applet
     pavucontrol fc-cache fd trash git curl ffmpeg nvim micro docker lazygit lazydocker
+    veila veilad veila-curtain
   )
   for cmd in "${checks[@]}"; do
     if ! command -v "$cmd" >/dev/null 2>&1; then
@@ -324,6 +342,7 @@ post_install_setup() {
   link_replace "$MANGO_DIR/alacritty" "$HOME/.config/alacritty" "alacritty config"
   link_if_missing "$MANGO_DIR/waybar" "$HOME/.config/waybar" "waybar config"
   link_if_missing "$MANGO_DIR/swaync" "$HOME/.config/swaync" "swaync config"
+  link_if_missing "$MANGO_DIR/veila" "$HOME/.config/veila" "veila config"
   link_if_missing "$MANGO_DIR/bashrc/.bashrc" "$HOME/.bashrc" "bashrc"
   link_if_missing "$MANGO_DIR/bashrc/.bash_aliases" "$HOME/.bash_aliases" "bash aliases"
 
@@ -346,36 +365,51 @@ print_manual_steps() {
 
 2. Deploy this config to ~/.config/mango (or clone this repo there).
 
-3. Restart the shell or source the linked bash config:
+3. On Debian/Ubuntu or Fedora, install Veila from the official release package:
+     https://naurissteins.com/veila/docs/installation/debian-ubuntu
+     https://naurissteins.com/veila/docs/installation/fedora
+   On Arch/Cachy, this installer uses the veila-bin AUR package when paru/yay is available.
+
+4. Restart the shell or source the linked bash config:
      source ~/.bashrc
 
-4. Add wallpapers under ~/.local/wallpapers/ (jpg/png/webp).
+5. Add wallpapers under ~/.local/wallpapers/ (jpg/png/webp).
 
-5. Run a wallpaper script once so pywal generates rofi colors:
+6. Run a wallpaper script once so pywal generates rofi and Veila colors:
      bash ~/.config/mango/scripts/wallpaperChangeWayland
-   (creates ~/.cache/wal/colors-rofi-dark.rasi used by rofi themes)
+   (creates ~/.cache/wal/colors-rofi-dark.rasi and ~/.cache/wal/veila.toml)
 
-6. Open nwg-look and choose a dark GTK theme such as Adwaita-dark or Dracula.
+7. Open nwg-look and choose a dark GTK theme such as Adwaita-dark or Dracula.
    Set the color scheme preference to dark.
 
-7. Open qt6ct and choose darker standard dialogs/theme settings.
+8. Open qt6ct and choose darker standard dialogs/theme settings.
    QT_QPA_PLATFORMTHEME=qt6ct is written to ~/.config/environment.d/mango.conf
    when that variable is not already configured there.
 
-8. If you want the Waybar Bluetooth click to use bluetui, set:
+9. If you want the Waybar Bluetooth click to use bluetui, set:
      "on-click": "exec alacritty --title=bluetui -e bluetui"
    in ~/.config/waybar/modules/bluetooth.jsonc
 
-9. For Canid (Alt+Shift+X), set project root if not ~/canid:
+10. The Mango session starts Veila automatically:
+      veilad
+      veila idle --lock-after=120 --lock-before-sleep
+    Veila locks after 120s idle and suspends 180s after lock readiness
+    (about 300s after idle begins). It uses ~/.config/veila/config.toml
+    and the current pywal wallpaper from ~/.cache/wal/veila.toml.
+
+11. For Canid (Alt+Shift+X), set project root if not ~/canid:
      export CANID_ROOT=/path/to/canid
 
-10. Reload Mango config after changes: SUPER+r (or mmsg reload if available)
+12. Reload Mango config after changes: SUPER+r (or mmsg reload if available)
     Restart Waybar if needed:
       bash ~/.config/mango/scripts/reloadWaybar --with-colors
 
 Optional verification:
   bash ~/.config/mango/scripts/volume --get
   bash ~/.config/mango/scripts/rofi_all_apps
+  veila check-config --config ~/.config/mango/veila/config.toml
+  veila lock --wait-ready
+  bash ~/.config/mango/scripts/lockWayland
   brightnessctl --list
   playerctl --version
   bluetui --help
@@ -406,6 +440,8 @@ main() {
   printf '\n=== core packages ===\n'
   install_packages "${PKG_NAME[@]}"
 
+  install_arch_required_aur_packages
+
   if [[ ${#PKG_OPTIONAL[@]} -gt 0 ]]; then
     printf '\n=== optional packages ===\n'
     install_optional_packages "${PKG_OPTIONAL[@]}"
@@ -433,6 +469,7 @@ main() {
     printf '[dry-run] would: replace ~/.config/alacritty with symlink -> %s/alacritty\n' "$MANGO_DIR"
     printf '[dry-run] would: symlink ~/.config/waybar -> %s/waybar if missing\n' "$MANGO_DIR"
     printf '[dry-run] would: symlink ~/.config/swaync -> %s/swaync if missing\n' "$MANGO_DIR"
+    printf '[dry-run] would: symlink ~/.config/veila -> %s/veila if missing\n' "$MANGO_DIR"
     printf '[dry-run] would: symlink ~/.bashrc -> %s/bashrc/.bashrc if missing\n' "$MANGO_DIR"
     printf '[dry-run] would: symlink ~/.bash_aliases -> %s/bashrc/.bash_aliases if missing\n' "$MANGO_DIR"
     printf '[dry-run] would: run fc-cache -fv if fc-cache is available\n'

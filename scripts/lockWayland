@@ -2,79 +2,11 @@
 
 set -euo pipefail
 
-WAL_COLORS="$HOME/.cache/wal/colors.sh"
-WAL_WALLPAPER="$HOME/.cache/wal/wal"
-SWAYLOCK_CONFIG="$HOME/.config/swaylock/config"
-
-if [[ -r "$WAL_COLORS" ]]; then
-    # shellcheck source=/dev/null
-    set +u
-    source "$WAL_COLORS"
-    set -u
-fi
-
-wallpaper="${wallpaper:-}"
-if [[ -z "$wallpaper" && -r "$WAL_WALLPAPER" ]]; then
-    wallpaper="$(<"$WAL_WALLPAPER")"
-fi
-
-if [[ -z "$wallpaper" || ! -f "$wallpaper" ]]; then
-    notify-send "swaylock" "Current pywal wallpaper was not found." 2>/dev/null || true
+if ! command -v veila >/dev/null 2>&1 || ! command -v veilad >/dev/null 2>&1; then
+    notify-send "Veila" "Install Veila and start veilad to lock the session." 2>/dev/null || true
     exit 1
 fi
 
-locker="$(command -v swaylock-effects || command -v swaylock || true)"
-if [[ -z "$locker" ]]; then
-    notify-send "swaylock" "Install swaylock-effects to use the wallpaper lock theme." 2>/dev/null || true
-    exit 1
-fi
+bash "$HOME/.config/mango/scripts/mangoWalColors" >/dev/null 2>&1 || true
 
-locker_help="$("$locker" --help 2>&1 || true)"
-required_options=(--clock --timestr --datestr --effect-blur)
-for option in "${required_options[@]}"; do
-    if [[ "$locker_help" != *"$option"* ]]; then
-        notify-send "swaylock" "Install swaylock-effects for clock, date, and blur support." 2>/dev/null || true
-        printf '%s\n' "Missing $option support in $locker. Install swaylock-effects." >&2
-        exit 1
-    fi
-done
-
-hex_to_swaylock() {
-    local color="${1:-#000000}"
-    local alpha="${2:-ff}"
-
-    color="${color#\#}"
-    printf '%s%s' "$color" "$alpha"
-}
-
-bg="$(hex_to_swaylock "${background:-#000000}" cc)"
-fg="$(hex_to_swaylock "${foreground:-#ffffff}" ff)"
-accent="$(hex_to_swaylock "${color6:-${foreground:-#ffffff}}" ff)"
-accent_dim="$(hex_to_swaylock "${color4:-${foreground:-#ffffff}}" dd)"
-wrong="$(hex_to_swaylock "${color1:-#ff5555}" ff)"
-clear="$(hex_to_swaylock "${color8:-${background:-#000000}}" dd)"
-
-exec "$locker" \
-    --config "$SWAYLOCK_CONFIG" \
-    --image "$wallpaper" \
-    --scaling fill \
-    --effect-blur 8x4 \
-    --clock \
-    --timestr "%H:%M" \
-    --datestr "%A, %d/%m/%Y" \
-    --inside-color "$bg" \
-    --inside-clear-color "$clear" \
-    --inside-ver-color "$accent_dim" \
-    --inside-wrong-color "$wrong" \
-    --ring-color "$accent" \
-    --ring-clear-color "$clear" \
-    --ring-ver-color "$accent_dim" \
-    --ring-wrong-color "$wrong" \
-    --key-hl-color "$accent" \
-    --bs-hl-color "$wrong" \
-    --text-color "$fg" \
-    --text-clear-color "$fg" \
-    --text-ver-color "$fg" \
-    --text-wrong-color "$fg" \
-    --line-color 00000000 \
-    --separator-color 00000000
+exec veila lock --wait-ready

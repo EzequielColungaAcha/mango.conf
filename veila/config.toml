@@ -1,0 +1,20 @@
+# Mango Veila config.
+# The current pywal wallpaper is generated into ~/.cache/wal/veila.toml.
+include = ["~/.cache/wal/veila.toml"]
+theme = "seceda"
+
+[lock]
+auto_reload_config = true
+hide_cursor = false
+suspend_seconds = 180
+suspend_only_on_battery = false
+skip_suspend_while_media_playing = false
+
+[weather]
+enabled = false
+
+[visuals.avatar]
+enabled = false
+
+[visuals.username]
+enabled = false

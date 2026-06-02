@@ -6,9 +6,9 @@ theme = "seceda"
 [lock]
 auto_reload_config = true
 hide_cursor = false
-suspend_seconds = 180
+suspend_seconds = 300
 suspend_only_on_battery = false
-skip_suspend_while_media_playing = false
+skip_suspend_while_media_playing = true
 
 [weather]
 enabled = false

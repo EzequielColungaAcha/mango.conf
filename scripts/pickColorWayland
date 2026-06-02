@@ -1,23 +1,49 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-geometry=$(slurp -p)
-[[ -z "$geometry" ]] && exit 0
+notify_color() {
+	local color="$1"
 
-color=$(
-	grim -g "$geometry" -t ppm - \
-		| magick - -format '%[pixel:p{0,0}]' txt:- \
-		| tail -n 1 \
-		| cut -d ' ' -f 4
-)
+	printf '%s' "$color" | wl-copy
 
-[[ -z "$color" ]] && exit 1
+	swatch="${XDG_RUNTIME_DIR:-/tmp}/mango-color-swatch.png"
+	magick -size 64x64 xc:"$color" "$swatch"
+	notify-send "Color copied" \
+		"$color" \
+		--icon="$swatch" \
+		2>/dev/null || true
+}
 
-printf '%s' "$color" | wl-copy
+pick_with_grim() {
+	notify-send "Color picker" \
+		"Install hyprpicker for live preview at the crosshair." \
+		2>/dev/null || true
 
-swatch="${XDG_RUNTIME_DIR:-/tmp}/mango-color-swatch.png"
-magick -size 64x64 xc:"$color" "$swatch"
-notify-send "Color copied" \
-	"$color" \
-	--icon="$swatch" \
-	2>/dev/null || true
+	local geometry
+	geometry=$(slurp -p)
+	[[ -z "$geometry" ]] && exit 0
+
+	local color
+	color=$(
+		grim -g "$geometry" -t ppm - \
+			| magick - -format '%[pixel:p{0,0}]' txt:- \
+			| tail -n 1 \
+			| cut -d ' ' -f 4
+	)
+
+	[[ -z "$color" ]] && exit 1
+	notify_color "$color"
+}
+
+pick_with_hyprpicker() {
+	local color
+	color=$(hyprpicker -f hex)
+	[[ -z "$color" ]] && exit 0
+	notify_color "$color"
+}
+
+if command -v hyprpicker >/dev/null 2>&1; then
+	pick_with_hyprpicker
+else
+	pick_with_grim
+fi

@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+
+theme="~/.config/mango/rofi/themes/rofi_cliphist.rasi"
+confirm_theme="~/.config/mango/rofi/themes/rofi_powermenu_theme.rasi"
+tmp_dir="/tmp/cliphist"
+yes='Yes'
+no='No'
+
+confirm_wipe() {
+	echo -e "$no\n$yes" | rofi \
+		-theme-str 'window {location: center; anchor: center; fullscreen: false; width: 250px;}' \
+		-theme-str 'mainbox {children: [ "message", "listview" ];}' \
+		-theme-str 'listview {columns: 2; lines: 1;}' \
+		-theme-str 'element-text {horizontal-align: 0.5;}' \
+		-theme-str 'textbox {horizontal-align: 0.5;}' \
+		-dmenu \
+		-p 'Confirmation' \
+		-mesg 'Clear clipboard history?' \
+		-theme "${confirm_theme}"
+}
+
+do_wipe() {
+	[[ "$(confirm_wipe)" == "$yes" ]] || exit 0
+	cliphist wipe
+	rm -rf "$tmp_dir"
+	notify-send "Clipboard history cleared"
+}
+
+build_clipboard_menu() {
+	mkdir -p "$tmp_dir"
+
+	while IFS= read -r line; do
+		[[ "$line" == *"<meta http-equiv="* ]] && continue
+
+		if [[ "$line" =~ ^([0-9]+)[[:space:]]+(\[\[[[:space:]]*)?binary.*[[:space:]](jpg|jpeg|png|bmp)([[:space:]]|\]\]) ]]; then
+			id="${BASH_REMATCH[1]}"
+			ext="${BASH_REMATCH[3]}"
+			thumb="$tmp_dir/$id.$ext"
+			if [[ ! -f "$thumb" ]]; then
+				printf '%s\n' "$line" | cliphist decode >"$thumb"
+			fi
+			printf '%s\0icon\x1f%s\n' "$line" "$thumb"
+		else
+			printf '%s\n' "$line"
+		fi
+	done < <(cliphist list | grep -aE '^[0-9]+' | grep -aFv '<meta http-equiv="content-type"')
+}
+
+if [[ "${1:-}" == "--wipe" ]]; then
+	do_wipe
+	exit 0
+fi
+
+selected=$(
+	build_clipboard_menu | rofi -dmenu \
+		-l 5 \
+		-show-icons \
+		-p "󰋩 Clipboard" \
+		-theme "${theme}"
+)
+
+[[ -z "$selected" ]] && exit 0
+
+case "$selected" in
+:kb-custom-1:)
+	do_wipe
+	;;
+*)
+	printf '%s' "$selected" | cliphist decode | wl-copy
+	;;
+esac

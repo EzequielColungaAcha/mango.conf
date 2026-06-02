@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+# Launch or focus Chrome guest browsing on tag 9.
+
+set -euo pipefail
+
+GUEST_APPID="google-chrome-guest"
+GUEST_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/google-chrome-guest"
+GUEST_TAG=9
+
+ensure_guest_tag() {
+	python3 <<PY
+import json
+import subprocess
+import sys
+
+GUEST_APPID = "$GUEST_APPID"
+GUEST_TAG = $GUEST_TAG
+
+try:
+    raw = subprocess.check_output(["mmsg", "get", "all-clients"], text=True)
+    data = json.loads(raw)
+except (subprocess.CalledProcessError, json.JSONDecodeError, FileNotFoundError):
+    sys.exit(1)
+
+for client in data.get("clients", []):
+    if client.get("appid") != GUEST_APPID:
+        continue
+    if GUEST_TAG in client.get("tags", []):
+        sys.exit(0)
+    subprocess.run(
+        ["mmsg", "dispatch", "tag,${GUEST_TAG},0", f"client,{client['id']}"],
+        check=False,
+    )
+    sys.exit(0)
+
+sys.exit(1)
+PY
+}
+
+focus_existing_guest() {
+	python3 <<'PY'
+import json
+import subprocess
+import sys
+
+try:
+	raw = subprocess.check_output(["mmsg", "get", "all-clients"], text=True)
+	data = json.loads(raw)
+except (subprocess.CalledProcessError, json.JSONDecodeError, FileNotFoundError):
+	sys.exit(1)
+
+for client in data.get("clients", []):
+	if client.get("appid") != "google-chrome-guest":
+		continue
+	subprocess.run(["mmsg", "dispatch", "tag,9,0", f"client,{client['id']}"], check=False)
+	sys.exit(0)
+
+sys.exit(1)
+PY
+}
+
+if focus_existing_guest; then
+	exit 0
+fi
+
+google-chrome-stable --guest --class="$GUEST_APPID" --user-data-dir="$GUEST_DIR" "$@" &
+disown
+
+for _ in $(seq 1 15); do
+	if ensure_guest_tag; then
+		exit 0
+	fi
+	sleep 1
+done
+
+exit 0

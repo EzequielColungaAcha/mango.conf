@@ -78,7 +78,7 @@ detect_pkg_manager() {
       brightnessctl playerctl pacman-contrib bash-completion sound-theme-freedesktop
       swaync
     )
-    PKG_OPTIONAL=(pasystray)
+    PKG_OPTIONAL=(pasystray hyprpicker wayland-pipewire-idle-inhibit)
     PKG_AUR_REQUIRED=(veila-bin)
     PKG_AUR=(google-chrome bluetui dracula-cursors-git)
     PKG_CANID=(pnpm hasura-cli btop)
@@ -233,6 +233,9 @@ warn_missing_commands() {
   fi
   if ! command -v bluetui >/dev/null 2>&1; then
     warn "bluetui not found (optional; used by the Waybar Bluetooth click action)"
+  fi
+  if ! command -v hyprpicker >/dev/null 2>&1; then
+    warn "hyprpicker not found (optional; enables live color preview on Waybar middle-click)"
   fi
 }
 
@@ -392,10 +395,13 @@ print_manual_steps() {
 
 10. The Mango session starts Veila through systemd user services:
       systemctl --user restart veilad.service veila-idle.service
-    The idle service reads ~/.config/veila/idle.env, locks after 120s idle,
-    and requests suspend locking before sleep. Veila suspends 180s after lock
-    readiness (about 300s after idle begins). It uses ~/.config/veila/config.toml
+    The idle service reads ~/.config/veila/idle.env, locks after 300s idle,
+    and requests suspend locking before sleep. Veila suspends 300s after lock
+    readiness (about 600s after idle begins). It uses ~/.config/veila/config.toml
     and the current pywal wallpaper from ~/.cache/wal/veila.toml.
+    Window rules in modules/windowrules.conf inhibit idle while Chrome, mpv,
+    and similar apps are focused. wayland-pipewire-idle-inhibit (optional package)
+    also inhibits idle when PipeWire reports active audio.
 
 11. For Canid (Alt+Shift+X), set project root if not ~/canid:
      export CANID_ROOT=/path/to/canid

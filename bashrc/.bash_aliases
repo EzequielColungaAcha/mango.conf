@@ -147,3 +147,7 @@ alias hma='hasura migrate apply --database-name default'
 alias hsa='hasura seed apply'
 alias hmta='hasura metadata apply'
 alias hmtr='hasura metadata reload'
+
+alias floci='AWS_ACCESS_KEY_ID=test AWS_SECRET_ACCESS_KEY=test AWS_DEFAULT_REGION=us-east-1 \
+    aws --endpoint-url=http://localhost:4566 s3 mb s3://canid-phi-storage-service-dev \
+    && sam build && sam local start-api -p 4200'

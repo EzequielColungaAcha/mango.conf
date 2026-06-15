@@ -1,0 +1,2 @@
+#!/usr/bin/bash
+rofi -show emoji -theme ~/.config/mango/rofi/themes/rofi_emoji_theme.rasi

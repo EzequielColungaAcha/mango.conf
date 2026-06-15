@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# Safe MPRIS display for Waybar (avoids native mpris/libplayerctl crashes).
+
+if ! playerctl status &>/dev/null; then
+	exit 0
+fi
+
+status=$(playerctl status 2>/dev/null || exit 0)
+title=$(playerctl metadata title 2>/dev/null || printf 'Unknown')
+artist=$(playerctl metadata artist 2>/dev/null || printf 'Unknown')
+
+if [[ "$status" == "Playing" ]]; then
+	icon="󰐊"
+	class="playing"
+	tooltip="Playing: ${title} - ${artist}"
+else
+	icon="󰏤"
+	class="paused"
+	tooltip="Paused: ${title} - ${artist}"
+fi
+
+text="${icon} ${title} - ${artist}"
+
+python3 - "$text" "$class" "$tooltip" <<'PY'
+import json
+import sys
+
+text, css_class, tooltip = sys.argv[1:4]
+print(json.dumps({"text": text, "class": css_class, "tooltip": tooltip}))
+PY

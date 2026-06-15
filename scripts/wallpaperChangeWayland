@@ -1,14 +1,48 @@
 #!/usr/bin/env bash
 
+ensure_awww_daemon() {
+    if ! pgrep -x awww-daemon >/dev/null; then
+        awww-daemon >/dev/null 2>&1 &
+    fi
+    local sock="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/${WAYLAND_DISPLAY:-wayland-0}-awww-daemon.sock"
+    local i=0
+    while (( i < 50 )); do
+        if [[ -S "$sock" ]]; then
+            return 0
+        fi
+        sleep 0.1
+        ((i++))
+    done
+    return 1
+}
+
+set_awww_wallpaper() {
+    local wallpaper="$1"
+    local attempt awww_exit=1 awww_err
+    for attempt in $(seq 1 15); do
+        awww_err=$(mktemp)
+        awww img "$wallpaper" --transition-type any --transition-step 255 --transition-fps 144 >"$awww_err" 2>&1
+        awww_exit=$?
+        rm -f "$awww_err"
+        if (( awww_exit == 0 )); then
+            return 0
+        fi
+        sleep 0.2
+    done
+    return "$awww_exit"
+}
+
 WALLPAPER_DIR="$HOME/Pictures/wallpapers"
-CURRENT_WALLPAPER=$(cat ~/.cache/wal/wal)
+CURRENT_WALLPAPER=$(cat ~/.cache/wal/wal 2>/dev/null || true)
+
+ensure_awww_daemon || true
 
 while true
 do
     WALLPAPER=$(find -L "$WALLPAPER_DIR" -type f \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" -o -iname "*.webp" \) | shuf -n 1)
     if [ "$CURRENT_WALLPAPER" != "$WALLPAPER" ]
     then
-        awww img "$WALLPAPER" --transition-type any --transition-step 255 --transition-fps 144 >/dev/null 2>&1
+        set_awww_wallpaper "$WALLPAPER" || true
         sleep 1
         wal -i "$WALLPAPER" >/dev/null 2>&1
         bash ~/.config/mango/scripts/mangoWalColors &>/dev/null || true
@@ -23,4 +57,3 @@ do
         exit
     fi
 done
-
